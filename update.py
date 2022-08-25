@@ -6,7 +6,12 @@ from logging import (
     error as log_error,
     info as log_info,
 )
-from os import path as ospath, environ, execl as osexecl
+from os import (
+    system as sh_run,
+    path as ospath,
+    environ,
+    execl as osexecl,
+)
 from datetime import datetime
 from subprocess import Popen, run as srun
 from requests import get as rget
@@ -118,7 +123,7 @@ try:
         log_info("Good to Go!")
         log_info(f"Current App Name {HEROKU_APP_NAME}")
         update_repo()
-        Popen(["python3", "-m", "bot"])
+        sh_run("sh bot.sh")
 except KeyError:
     BASE_URL = None
     log_error("Something went wrong")
