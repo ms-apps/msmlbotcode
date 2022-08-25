@@ -105,8 +105,9 @@ except:
 
 try:
     if (
-        DOUBLE_DYNO & CYCLE_DYNO & HEROKU_APP_NAME
-        != getConfig("HEROKU_APP_NAME_B")
+        DOUBLE_DYNO
+        & CYCLE_DYNO
+        & (HEROKU_APP_NAME != getConfig("HEROKU_APP_NAME_B"))
     ) or (
         DOUBLE_DYNO
         & (not CYCLE_DYNO)
