@@ -7,10 +7,13 @@ from logging import (
     info as log_info,
 )
 from os import path as ospath, environ, execl as osexecl
+from datetime import datetime
 from subprocess import run as srun
 from requests import get as rget
 from dotenv import load_dotenv
 from sys import executable
+
+CYCLE_DYNO = 15 <= datetime.now().day <= 31
 
 if ospath.exists("log.txt"):
     with open("log.txt", "r+") as f:
@@ -23,6 +26,14 @@ basicConfig(
 )
 
 CONFIG_FILE_URL = environ.get("CONFIG_FILE_URL")
+HEROKU_APP_NAME = environ.get("HEROKU_APP_NAME")
+HEROKU_APP_ID = environ.get("HEROKU_APP_ID")
+HEROKU_DYNO_ID = environ.get("HEROKU_DYNO_ID")
+log_info(f"CONFIG_FILE_URL: {CONFIG_FILE_URL}")
+log_info(f"HEROKU_APP_NAME: {HEROKU_APP_NAME}")
+log_info(f"HEROKU_APP_ID: {HEROKU_APP_ID}")
+log_info(f"HEROKU_DYNO_ID: {HEROKU_DYNO_ID}")
+
 try:
     if len(CONFIG_FILE_URL) == 0:
         raise TypeError
@@ -41,6 +52,38 @@ except:
     pass
 
 load_dotenv("config.env", override=True)
+
+
+# def getConfig(name: str):
+#     return environ[name]
+
+
+# try:
+#     DOUBLE_DYNO = getConfig("DOUBLE_DYNO")
+#     DOUBLE_DYNO = DOUBLE_DYNO.lower() == "true"
+# except:
+#     DOUBLE_DYNO = False
+
+# try:
+#     HEROKU_API_KEY = getConfig("HEROKU_API_KEY_A")
+#     HEROKU_APP_NAME = getConfig("HEROKU_APP_NAME")
+#     if len(HEROKU_API_KEY) == 0 or len(HEROKU_APP_NAME) == 0:
+#         raise KeyError
+#     if DOUBLE_DYNO:
+#         if CYCLE_DYNO:
+#             HEROKU_API_KEY = getConfig("HEROKU_API_KEY_B")
+#             HEROKU_APP_NAME = getConfig("HEROKU_APP_NAME_B")
+#         else:
+#             HEROKU_API_KEY = getConfig("HEROKU_API_KEY_A")
+#             HEROKU_APP_NAME = getConfig("HEROKU_APP_NAME_A")
+#         BASE_URL = f"https://{HEROKU_APP_NAME}.herokuapp.com"
+#     LOGGER.info("HEROKU_APP_NAME: %s", HEROKU_APP_NAME)
+#     LOGGER.info("BASE_URL: %s", BASE_URL)
+# except KeyError:
+#     LOGGER.warning("Heroku details not entered.")
+#     HEROKU_API_KEY = None
+#     HEROKU_APP_NAME = None
+#     BASE_URL = None
 
 UPSTREAM_REPO = environ.get("UPSTREAM_REPO")
 UPSTREAM_BRANCH = environ.get("UPSTREAM_BRANCH")
