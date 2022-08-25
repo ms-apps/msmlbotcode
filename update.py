@@ -27,8 +27,8 @@ basicConfig(
 
 CONFIG_FILE_URL = environ.get("CONFIG_FILE_URL")
 HEROKU_APP_NAME = environ.get("APP_NAME")
-log_info(f"CONFIG_FILE_URL: {CONFIG_FILE_URL}")
 log_info(f"HEROKU_APP_NAME: {HEROKU_APP_NAME}")
+log_info(f"CYCLE_DYNO: {CYCLE_DYNO}")
 
 try:
     if len(CONFIG_FILE_URL) == 0:
@@ -50,72 +50,74 @@ except:
 load_dotenv("config.env", override=True)
 
 
-# def getConfig(name: str):
-#     return environ[name]
+def getConfig(name: str):
+    i = environ[name]
+    log_info(f"{name}: {i}")
+    return i
 
 
-# try:
-#     DOUBLE_DYNO = getConfig("DOUBLE_DYNO")
-#     DOUBLE_DYNO = DOUBLE_DYNO.lower() == "true"
-# except:
-#     DOUBLE_DYNO = False
+def update_repo():
+    try:
+        UPSTREAM_REPO = getConfig("UPSTREAM_REPO")
+        UPSTREAM_BRANCH = getConfig("UPSTREAM_BRANCH")
+        if len(UPSTREAM_REPO) == 0:
+            raise TypeError
+    except:
+        UPSTREAM_REPO = "https://github.com/ms-apps/msmlbotcode"
+    try:
+        if len(UPSTREAM_BRANCH) == 0:
+            raise TypeError
+    except:
+        UPSTREAM_BRANCH = "main"
 
-# try:
-#     HEROKU_API_KEY = getConfig("HEROKU_API_KEY_A")
-#     HEROKU_APP_NAME = getConfig("HEROKU_APP_NAME")
-#     if len(HEROKU_API_KEY) == 0 or len(HEROKU_APP_NAME) == 0:
-#         raise KeyError
-#     if DOUBLE_DYNO:
-#         if CYCLE_DYNO:
-#             HEROKU_API_KEY = getConfig("HEROKU_API_KEY_B")
-#             HEROKU_APP_NAME = getConfig("HEROKU_APP_NAME_B")
-#         else:
-#             HEROKU_API_KEY = getConfig("HEROKU_API_KEY_A")
-#             HEROKU_APP_NAME = getConfig("HEROKU_APP_NAME_A")
-#         BASE_URL = f"https://{HEROKU_APP_NAME}.herokuapp.com"
-#     LOGGER.info("HEROKU_APP_NAME: %s", HEROKU_APP_NAME)
-#     LOGGER.info("BASE_URL: %s", BASE_URL)
-# except KeyError:
-#     LOGGER.warning("Heroku details not entered.")
-#     HEROKU_API_KEY = None
-#     HEROKU_APP_NAME = None
-#     BASE_URL = None
+    if ospath.exists(".git"):
+        srun(["rm", "-rf", ".git"])
 
-UPSTREAM_REPO = environ.get("UPSTREAM_REPO")
-UPSTREAM_BRANCH = environ.get("UPSTREAM_BRANCH")
-try:
-    if len(UPSTREAM_REPO) == 0:
-        raise TypeError
-except:
-    UPSTREAM_REPO = "https://github.com/ms-apps/msmlbotcode"
-try:
-    if len(UPSTREAM_BRANCH) == 0:
-        raise TypeError
-except:
-    UPSTREAM_BRANCH = "main"
-
-if ospath.exists(".git"):
-    srun(["rm", "-rf", ".git"])
-
-update = srun(
-    [
-        f"git init -q \
-                 && git config --global user.email msmirror@gmail.com \
-                 && git config --global user.name msmlbot \
-                 && git add . \
-                 && git commit -sm update -q \
-                 && git remote add origin {UPSTREAM_REPO} \
-                 && git fetch origin -q \
-                 && git reset --hard origin/{UPSTREAM_BRANCH} -q"
-    ],
-    shell=True,
-)
-
-if update.returncode == 0:
-    log_info(
-        "Successfully updated with latest commit from UPSTREAM_REPO"
+    update = srun(
+        [
+            f"git init -q \
+                    && git config --global user.email msmirror@gmail.com \
+                    && git config --global user.name msmlbot \
+                    && git add . \
+                    && git commit -sm update -q \
+                    && git remote add origin {UPSTREAM_REPO} \
+                    && git fetch origin -q \
+                    && git reset --hard origin/{UPSTREAM_BRANCH} -q"
+        ],
+        shell=True,
     )
-else:
-    log_error(
-        "Something went wrong while updating, check UPSTREAM_REPO if valid or not!"
-    )
+
+    if update.returncode == 0:
+        log_info(
+            "Successfully updated with latest commit from UPSTREAM_REPO"
+        )
+    else:
+        log_error(
+            "Something went wrong while updating, check UPSTREAM_REPO if valid or not!"
+        )
+
+
+try:
+    DOUBLE_DYNO = getConfig("DOUBLE_DYNO")
+    DOUBLE_DYNO = DOUBLE_DYNO.lower() == "true"
+except:
+    DOUBLE_DYNO = False
+
+try:
+    if (
+        DOUBLE_DYNO & CYCLE_DYNO & HEROKU_APP_NAME
+        != getConfig("HEROKU_APP_NAME_B")
+    ) or (
+        DOUBLE_DYNO
+        & (not CYCLE_DYNO)
+        & (HEROKU_APP_NAME != getConfig("HEROKU_APP_NAME_A"))
+    ):
+        log_info("Need to change dyno")
+    else:
+        log_info("Good to Go!")
+        log_info(f"Current App Name {HEROKU_APP_NAME}")
+        update_repo()
+        srun("python3", "-m", "bot", check=True)
+except KeyError:
+    BASE_URL = None
+    log_error("Something went wrong")
