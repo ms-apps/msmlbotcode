@@ -18,7 +18,6 @@ from requests import get as rget
 from json import loads as jsonloads
 from subprocess import Popen, run as srun, check_output
 from time import sleep, time
-from datetime import datetime
 from threading import Thread, Lock
 from dotenv import load_dotenv
 from pyrogram import Client, enums

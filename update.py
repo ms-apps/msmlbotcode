@@ -8,7 +8,7 @@ from logging import (
 )
 from os import path as ospath, environ, execl as osexecl
 from datetime import datetime
-from subprocess import run as srun
+from subprocess import Popen, run as srun
 from requests import get as rget
 from dotenv import load_dotenv
 from sys import executable
@@ -118,7 +118,7 @@ try:
         log_info("Good to Go!")
         log_info(f"Current App Name {HEROKU_APP_NAME}")
         update_repo()
-        srun("python3", "-m", "bot", check=True)
+        Popen(["python3", "-m", "bot"])
 except KeyError:
     BASE_URL = None
     log_error("Something went wrong")
