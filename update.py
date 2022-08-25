@@ -26,13 +26,9 @@ basicConfig(
 )
 
 CONFIG_FILE_URL = environ.get("CONFIG_FILE_URL")
-HEROKU_APP_NAME = environ.get("HEROKU_APP_NAME")
-HEROKU_APP_ID = environ.get("HEROKU_APP_ID")
-HEROKU_DYNO_ID = environ.get("HEROKU_DYNO_ID")
+HEROKU_APP_NAME = environ.get("APP_NAME")
 log_info(f"CONFIG_FILE_URL: {CONFIG_FILE_URL}")
 log_info(f"HEROKU_APP_NAME: {HEROKU_APP_NAME}")
-log_info(f"HEROKU_APP_ID: {HEROKU_APP_ID}")
-log_info(f"HEROKU_DYNO_ID: {HEROKU_DYNO_ID}")
 
 try:
     if len(CONFIG_FILE_URL) == 0:
